@@ -172,6 +172,8 @@ skipInits:
 							r[0] = '\0';
 							hash = lclGetHash(t, r, 16);
 
+							thrust::device_vector<unsigned short> d_r1(LOOPSIZE);
+
 							int p;
 
 							// Copy in the array t and r, LOOPSIZE times into the host array
@@ -188,6 +190,7 @@ skipInits:
 								int pos  = p * RT_SIZE + 1;
 								h_r[pos] = o;
 								h_t[pos] = o;
+								d_r1[p]  = o; // For hash ^ r[1] operations
 							}
 
 							// cudaMemcpy(d_r, h_r, LOOPSIZE * RT_SIZE, cudaMemcpyHostToDevice);
@@ -203,7 +206,7 @@ skipInits:
 							// For XOR operations with r[1]
 							// thrust::device_ptr<unsigned short>       pHash = &d_hash[0];
 							// thrust::device_reference<unsigned short> rHash(pHash);
-							thrust::transform(d_hash.begin(), d_hash.end(), d_r.begin(),
+							thrust::transform(d_hash.begin(), d_hash.end(), d_r1.begin(),
 									  xor_hash.begin(), thrust::bit_xor<int>());
 
 							/*for (o=32; o < 128; ++o) {
