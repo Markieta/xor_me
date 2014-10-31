@@ -7,7 +7,7 @@
 #include <cuda_runtime.h>
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
-#include <thrust/generate.h>
+#include <thrust/transform.h>
 
 
 inline void lclRotateRight(unsigned short& rnValue, size_t nBits)
@@ -130,16 +130,17 @@ int main(int argc, char ** argv) {
 	// unsigned char*  h_x = new unsigned char[LOOPSIZE];
 
 	thrust::host_vector<unsigned short> h_r(LOOPSIZE * RT_SIZE);
+	thrust::host_vector<unsigned short> h_hash(LOOPSIZE);
 	thrust::host_vector<unsigned char>  h_t(LOOPSIZE * RT_SIZE);
 	thrust::host_vector<unsigned char>  h_x(LOOPSIZE);
 
-	unsigned short* d_r;
-	unsigned char*  d_t;
-	unsigned char*  d_x;
+	// unsigned short* d_r;
+	// unsigned char*  d_t;
+	// unsigned char*  d_x;
 
-	cudaMalloc((void**)&d_r, LOOPSIZE * RT_SIZE);
-	cudaMalloc((void**)&d_t, LOOPSIZE * RT_SIZE);
-	cudaMalloc((void**)&d_x, LOOPSIZE);
+	// cudaMalloc((void**)&d_r, LOOPSIZE * RT_SIZE);
+	// cudaMalloc((void**)&d_t, LOOPSIZE * RT_SIZE);
+	// cudaMalloc((void**)&d_x, LOOPSIZE);
 
 	if (state)
 		goto skipInits;
@@ -193,9 +194,17 @@ skipInits:
 							// cudaMemcpy(d_t, h_t, LOOPSIZE * RT_SIZE, cudaMemcpyHostToDevice);
 							// cudaMemcpy(d_x, h_x, LOOPSIZE,           cudaMemcpyHostToDevice);
 
-							thrust::device_vector<unsigned short> d_r = h_r;
-							thrust::device_vector<unsigned char> d_t = h_t;
-							thrust::device_vector<unsigned char> d_x = h_x;
+							thrust::device_vector<unsigned short> d_r    = h_r;
+							thrust::device_vector<unsigned short> d_hash = h_hash;
+							thrust::device_vector<unsigned char> d_t     = h_t;
+							thrust::device_vector<unsigned char> d_x     = h_x;
+							thrust::device_vector<unsigned short> xor_hash(LOOPSIZE); // XOR results
+
+							// For XOR operations with r[1]
+							// thrust::device_ptr<unsigned short>       pHash = &d_hash[0];
+							// thrust::device_reference<unsigned short> rHash(pHash);
+							thrust::transform(d_hash.begin(), d_hash.end(), d_r.begin(),
+									  xor_hash.begin(), thrust::bit_xor<int>());
 
 							/*for (o=32; o < 128; ++o) {
 skipInits:
