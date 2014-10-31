@@ -155,7 +155,24 @@ int main(int argc, char ** argv) {
 				for (l=32; l < 128; ++l) {
 					for (m=32; m < 128; ++m) {
 						for (n=32; n < 128; ++n) {
-							for (o=32; o < 128; ++o) {
+skipInits:
+							// Initial case
+							unsigned short x = nHash ^ hash;
+							lclRotateRight(x, 1);
+							if (32 <= x && x < 127) {
+								t[0] = static_cast<unsigned char>(x);
+								if (nKey == lclGetKey(t, 16)) {
+									std::cout << "Password: '" << t << "'" << std::endl;
+								}
+							}
+							hash ^= r[1];
+							r[1] = t[1] = o;
+							lclRotateLeft(r[1], 2);
+							hash ^= r[1];
+							r[0] = '\0';
+							hash = lclGetHash(t, r, 16);
+
+							/*for (o=32; o < 128; ++o) {
 skipInits:
 								unsigned short x = nHash ^ hash;
 								lclRotateRight(x, 1);
@@ -173,7 +190,7 @@ skipInits:
 									r[0] = '\0';
 									hash = lclGetHash(t, r, 16);
 								}
-							}
+							}*/
 							hash ^= r[2];
 							r[2] = t[2] = n;
 							lclRotateLeft(r[2], 3);
