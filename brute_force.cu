@@ -84,6 +84,11 @@ void usage_exit(char *prog) {
 	exit(1);
 }
 
+__global__ void initialize()
+{
+	;	
+}
+
 int main(int argc, char ** argv) {
 	bool state = false;
 	char *prog = argv[0];
@@ -113,6 +118,11 @@ int main(int argc, char ** argv) {
 
 	std::cout << std::hex << "Key: " << nKey << std::endl;
 	std::cout << std::hex << "Hash: " << nHash << std::endl;
+
+	float* h_o = new float[96];
+
+	int p = 0;
+	for(o=32; o < 128; ++o, p++) h_o[p] = o;
 
 	if (state)
 		goto skipInits;
