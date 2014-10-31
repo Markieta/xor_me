@@ -5,6 +5,9 @@
 #include <iostream>
 #include <sstream>
 #include <cuda_runtime.h>
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+#include <thrust/generate.h>
 
 
 inline void lclRotateRight(unsigned short& rnValue, size_t nBits)
@@ -122,9 +125,13 @@ int main(int argc, char ** argv) {
 	std::cout << std::hex << "Key: " << nKey << std::endl;
 	std::cout << std::hex << "Hash: " << nHash << std::endl;
 
-	unsigned short* h_r = new unsigned short[LOOPSIZE * RT_SIZE];
-	unsigned char*  h_t = new unsigned char[LOOPSIZE  * RT_SIZE];
-	unsigned char*  h_x = new unsigned char[LOOPSIZE];
+	// unsigned short* h_r = new unsigned short[LOOPSIZE * RT_SIZE];
+	// unsigned char*  h_t = new unsigned char[LOOPSIZE  * RT_SIZE];
+	// unsigned char*  h_x = new unsigned char[LOOPSIZE];
+
+	thrust::host_vector<unsigned short> h_r(LOOPSIZE * RT_SIZE);
+	thrust::host_vector<unsigned char>  h_t(LOOPSIZE * RT_SIZE);
+	thrust::host_vector<unsigned char>  h_x(LOOPSIZE);
 
 	unsigned short* d_r;
 	unsigned char*  d_t;
@@ -182,9 +189,13 @@ skipInits:
 								h_t[pos] = o;
 							}
 
-							cudaMemcpy(d_r, h_r, LOOPSIZE * RT_SIZE, cudaMemcpyHostToDevice);
-							cudaMemcpy(d_t, h_t, LOOPSIZE * RT_SIZE, cudaMemcpyHostToDevice);
-							cudaMemcpy(d_x, h_x, LOOPSIZE,           cudaMemcpyHostToDevice);
+							// cudaMemcpy(d_r, h_r, LOOPSIZE * RT_SIZE, cudaMemcpyHostToDevice);
+							// cudaMemcpy(d_t, h_t, LOOPSIZE * RT_SIZE, cudaMemcpyHostToDevice);
+							// cudaMemcpy(d_x, h_x, LOOPSIZE,           cudaMemcpyHostToDevice);
+
+							thrust::device_vector<unsigned short> d_r = h_r;
+							thrust::device_vector<unsigned char> d_t = h_t;
+							thrust::device_vector<unsigned char> d_x = h_x;
 
 							/*for (o=32; o < 128; ++o) {
 skipInits:
