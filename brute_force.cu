@@ -70,6 +70,8 @@ unsigned char t[9] = {1, 0};
                     "%04hx%04hx%04hx%04hx%04hx%04hx%04hx%04hx:" \
                     "%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx"
 
+#define LOOPSIZE 96
+
 void dump_exit(int) {
 	printf("State: " STATEFORMAT "\n",
 	       i, j, k, l, m, n, o,
@@ -119,10 +121,13 @@ int main(int argc, char ** argv) {
 	std::cout << std::hex << "Key: " << nKey << std::endl;
 	std::cout << std::hex << "Hash: " << nHash << std::endl;
 
-	float* h_o = new float[96];
+	unsigned char*  h_o = new unsigned char[LOOPSIZE];
+	unsigned short* h_r = new unsigned short[LOOPSIZE * sizeof(r) / sizeof(*r)];
+	unsigned char*  h_t = new unsigned char[LOOPSIZE * sizeof(t) / sizeof(*t)];
 
-	int p = 0;
-	for(o=32; o < 128; ++o, p++) h_o[p] = o;
+	int p;
+
+	for(o=32, p=0; o < 128; ++o, p++) h_o[p] = o;
 
 	if (state)
 		goto skipInits;
