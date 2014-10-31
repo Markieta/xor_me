@@ -126,23 +126,13 @@ int main(int argc, char ** argv) {
 	unsigned char*  h_t = new unsigned char[LOOPSIZE  * RT_SIZE];
 	unsigned char*  h_x = new unsigned char[LOOPSIZE];
 
-	int p;
+	unsigned short* d_r;
+	unsigned char*  d_t;
+	unsigned char*  d_x;
 
-	// Copy in the array t and r, LOOPSIZE times into the host array
-	for(p=0; p < LOOPSIZE * RT_SIZE; p++)
-	{
-		int pos = p % RT_SIZE;
-		h_t[p]  = t[pos];
-		h_r[p]  = r[pos];
-	}
-
-	// Assign relative o to each instance of t[1] and r[1];
-	for(o=32, p=0; o < 128; ++o, p++)
-	{
-		int pos  = p * RT_SIZE + 1;
-		h_t[pos] = o;
-		h_r[pos] = o;
-	}
+	cudaMalloc((void**)&d_r, LOOPSIZE * RT_SIZE);
+	cudaMalloc((void**)&d_t, LOOPSIZE * RT_SIZE);
+	cudaMalloc((void**)&d_x, LOOPSIZE);
 
 	if (state)
 		goto skipInits;
@@ -156,6 +146,7 @@ int main(int argc, char ** argv) {
 					for (m=32; m < 128; ++m) {
 						for (n=32; n < 128; ++n) {
 skipInits:
+
 							// Initial case
 							unsigned short x = nHash ^ hash;
 							lclRotateRight(x, 1);
@@ -168,9 +159,32 @@ skipInits:
 							hash ^= r[1];
 							r[1] = t[1] = o;
 							lclRotateLeft(r[1], 2);
-							hash ^= r[1];
+							hash ^= r[1]; 
+							// if o == 32
 							r[0] = '\0';
 							hash = lclGetHash(t, r, 16);
+
+							int p;
+
+							// Copy in the array t and r, LOOPSIZE times into the host array
+							for(p=0; p < LOOPSIZE * RT_SIZE; p++)
+							{
+								int pos = p % RT_SIZE;
+								h_r[p]  = r[pos];
+								h_t[p]  = t[pos];
+							}
+
+							// Assign relative o to each instance of t[1] and r[1];
+							for(o=32, p=0; o < 128; ++o, p++)
+							{
+								int pos  = p * RT_SIZE + 1;
+								h_r[pos] = o;
+								h_t[pos] = o;
+							}
+
+							cudaMemcpy(d_r, h_r, LOOPSIZE * RT_SIZE, cudaMemcpyHostToDevice);
+							cudaMemcpy(d_t, h_t, LOOPSIZE * RT_SIZE, cudaMemcpyHostToDevice);
+							cudaMemcpy(d_x, h_x, LOOPSIZE,           cudaMemcpyHostToDevice);
 
 							/*for (o=32; o < 128; ++o) {
 skipInits:
