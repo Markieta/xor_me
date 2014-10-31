@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <iostream>
 #include <sstream>
+#include <cuda_runtime.h>
 
 
 inline void lclRotateRight(unsigned short& rnValue, size_t nBits)
